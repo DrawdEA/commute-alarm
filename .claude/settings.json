@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"console.log\\(''rn:'', require\\(''./node_modules/react-native/package.json''\\).version, ''react:'', require\\(''./node_modules/react/package.json''\\).version\\)\")",
+      "Bash(npx expo:*)"
+    ]
+  }
+}
