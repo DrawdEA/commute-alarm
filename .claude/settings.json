@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(node -e \"console.log\\(''rn:'', require\\(''./node_modules/react-native/package.json''\\).version, ''react:'', require\\(''./node_modules/react/package.json''\\).version\\)\")",
-      "Bash(npx expo:*)"
+      "Bash(npx expo:*)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx|json\\)$\")",
+      "Bash(npx tsc:*)",
+      "Bash(node -e \":*)",
+      "Bash(find /c/Users/Edward/Documents/Coding/repos/commute-alarm -type f \\\\\\(-name *.mp3 -o -name *.wav -o -name *.m4a \\\\\\) ! -path */node_modules/*)"
     ]
   }
 }

@@ -1,77 +1,118 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { DEFAULT_SOUND_KEY } from '../constants/sounds';
 
 export type Destination = {
   id: string;
   latitude: number;
   longitude: number;
   label: string;
+  radius: number;
+  active: boolean;
 };
 
 type AlarmContextValue = {
-  destination: Destination | null;
-  radius: number;
-  savedDestinations: Destination[];
-  setDestination: (d: Destination | null) => void;
-  setRadius: (r: number) => void;
-  saveDestination: (d: Destination) => void;
+  destinations: Destination[];
+  addDestination: (d: Omit<Destination, 'id'>) => void;
   removeDestination: (id: string) => void;
+  toggleDestination: (id: string) => void;
+  updateDestination: (id: string, updates: Partial<Omit<Destination, 'id'>>) => void;
+  selectedSound: string;
+  setSelectedSound: (key: string) => void;
+  alarmVolume: number;
+  setAlarmVolume: (v: number) => void;
+  defaultRadius: number;
+  setDefaultRadius: (r: number) => void;
 };
 
 const AlarmContext = createContext<AlarmContextValue>({
-  destination: null,
-  radius: 500,
-  savedDestinations: [],
-  setDestination: () => {},
-  setRadius: () => {},
-  saveDestination: () => {},
+  destinations: [],
+  addDestination: () => {},
   removeDestination: () => {},
+  toggleDestination: () => {},
+  updateDestination: () => {},
+  selectedSound: DEFAULT_SOUND_KEY,
+  setSelectedSound: () => {},
+  alarmVolume: 1,
+  setAlarmVolume: () => {},
+  defaultRadius: 500,
+  setDefaultRadius: () => {},
 });
 
 export function AlarmProvider({ children }: { children: React.ReactNode }) {
-  const [destination, setDestinationState] = useState<Destination | null>(null);
-  const [radius, setRadiusState] = useState(500);
-  const [savedDestinations, setSavedDestinationsState] = useState<Destination[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [selectedSound, setSelectedSoundState] = useState(DEFAULT_SOUND_KEY);
+  const [alarmVolume, setAlarmVolumeState] = useState(1);
+  const [defaultRadius, setDefaultRadiusState] = useState(500);
 
   useEffect(() => {
-    async function load() {
-      const [destRaw, radiusRaw, savedRaw] = await AsyncStorage.multiGet(['destination', 'radius', 'savedDestinations']);
-      if (destRaw[1]) setDestinationState(JSON.parse(destRaw[1]));
-      if (radiusRaw[1]) setRadiusState(Number(radiusRaw[1]));
-      if (savedRaw[1]) setSavedDestinationsState(JSON.parse(savedRaw[1]));
-    }
-    load();
+    AsyncStorage.getItem('destinations').then(raw => {
+      if (raw) setDestinations(JSON.parse(raw));
+    });
+    AsyncStorage.getItem('selectedSound').then(raw => {
+      if (raw) setSelectedSoundState(raw);
+    });
+    AsyncStorage.getItem('alarmVolume').then(raw => {
+      if (raw) setAlarmVolumeState(parseFloat(raw));
+    });
+    AsyncStorage.getItem('defaultRadius').then(raw => {
+      if (raw) setDefaultRadiusState(parseInt(raw, 10));
+    });
   }, []);
 
-  function setDestination(d: Destination | null) {
-    setDestinationState(d);
-    if (d) AsyncStorage.setItem('destination', JSON.stringify(d));
-    else AsyncStorage.removeItem('destination');
+  function persist(updated: Destination[]) {
+    AsyncStorage.setItem('destinations', JSON.stringify(updated));
   }
 
-  function setRadius(r: number) {
-    setRadiusState(r);
-    AsyncStorage.setItem('radius', String(r));
-  }
-
-  function saveDestination(d: Destination) {
-    setSavedDestinationsState(prev => {
-      const updated = [...prev.filter(s => s.id !== d.id), d];
-      AsyncStorage.setItem('savedDestinations', JSON.stringify(updated));
+  function addDestination(d: Omit<Destination, 'id'>) {
+    setDestinations(prev => {
+      const updated = [...prev, { ...d, id: Date.now().toString() }];
+      persist(updated);
       return updated;
     });
   }
 
   function removeDestination(id: string) {
-    setSavedDestinationsState(prev => {
-      const updated = prev.filter(s => s.id !== id);
-      AsyncStorage.setItem('savedDestinations', JSON.stringify(updated));
+    setDestinations(prev => {
+      const updated = prev.filter(d => d.id !== id);
+      persist(updated);
       return updated;
     });
   }
 
+  function toggleDestination(id: string) {
+    setDestinations(prev => {
+      const updated = prev.map(d => d.id === id ? { ...d, active: !d.active } : d);
+      persist(updated);
+      return updated;
+    });
+  }
+
+  function updateDestination(id: string, updates: Partial<Omit<Destination, 'id'>>) {
+    setDestinations(prev => {
+      const updated = prev.map(d => d.id === id ? { ...d, ...updates } : d);
+      persist(updated);
+      return updated;
+    });
+  }
+
+  function setSelectedSound(key: string) {
+    setSelectedSoundState(key);
+    AsyncStorage.setItem('selectedSound', key);
+  }
+
+  function setAlarmVolume(v: number) {
+    setAlarmVolumeState(v);
+    AsyncStorage.setItem('alarmVolume', v.toString());
+  }
+
+  function setDefaultRadius(r: number) {
+    setDefaultRadiusState(r);
+    AsyncStorage.setItem('defaultRadius', r.toString());
+  }
+
   return (
-    <AlarmContext.Provider value={{ destination, radius, savedDestinations, setDestination, setRadius, saveDestination, removeDestination }}>
+    <AlarmContext.Provider value={{ destinations, addDestination, removeDestination, toggleDestination, updateDestination, selectedSound, setSelectedSound, alarmVolume, setAlarmVolume, defaultRadius, setDefaultRadius }}>
       {children}
     </AlarmContext.Provider>
   );
