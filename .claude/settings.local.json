@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({'version': d.get\\('version'\\), 'deps': list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)[:20]}, indent=2\\)\\)\")"
+    ]
+  }
+}
