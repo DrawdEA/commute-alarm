@@ -4,6 +4,11 @@ export type AlarmSound = {
   file: any; // require() returns a number at runtime
 };
 
+/** Bundled .caf copy (≤30s) used by iOS notifications and AlarmKit when the app isn't open. */
+export function iosSoundFile(key: string): string {
+  return `alarm_${getSoundByKey(key).key.toLowerCase().replace(/[ -]/g, '_')}.caf`;
+}
+
 export const ALARM_SOUNDS: AlarmSound[] = [
   { key: 'Default', label: 'Default', file: require('../assets/alarmsounds/Default.mp3') },
   { key: 'Chiptune', label: 'Chiptune', file: require('../assets/alarmsounds/Chiptune.mp3') },

@@ -9,7 +9,9 @@ A React Native app (branded **LoClock**) that alerts you when you're approaching
 | Expo ~54 (managed) | Build toolchain + native module access |
 | expo-router ~6 | File-based tab navigation |
 | react-native-maps | Interactive map with custom markers + radius circles |
-| expo-location | Foreground GPS, `watchPositionAsync`, reverse/forward geocoding |
+| expo-location | GPS watcher, background geofencing, reverse/forward geocoding |
+| expo-task-manager | Background geofence task |
+| expo-notifications | Fallback arrival notification (pre-iOS 26) |
 | expo-av | Alarm sound playback (loops until dismissed) |
 | @react-native-async-storage/async-storage | Persistent local storage |
 | @react-native-community/slider | Radius and volume sliders |
@@ -64,19 +66,15 @@ type Destination = {
 };
 ```
 
-## How the alarm fires (`components/AlarmMonitor.tsx`)
+## How the alarm fires
 
-`AlarmMonitor` is a renderless component mounted at the root layout. It:
+Everything funnels into `handleArrival(id)` in `lib/arrival.ts`. It runs calls one at a time, switches the destination off in storage first (so each alarm fires once), then rings.
 
-1. Watches `activeDestinations` (destinations where `active === true`)
-2. Starts `Location.watchPositionAsync` with `Accuracy.Balanced`, `distanceInterval: 20m`
-3. For each location update, runs a **haversine distance** check against every active destination
-4. On first entry into radius: plays the selected sound (looping, honours volume setting), vibrates, shows `Alert.alert`
-5. On "OK": unloads sound, auto-toggles the destination off, clears the fired-ID from the ref
-6. Uses `firedRef` (a `Set<string>`) to prevent re-firing while inside the radius
-7. Tears down the location watcher when `activeDestinations` is empty
-
-**Limitation:** Only works while the app is foregrounded. No background location.
+- **Background / locked phone:** iOS geofences (`Location.startGeofencingAsync`, task `loclock-geofence`, defined at bundle load via `index.ts`). On enter, it rings a system alarm through AlarmKit (`modules/loclock-alarm`, iOS 26+, rings through silent mode). If AlarmKit is unavailable or denied, it sends a time-sensitive notification instead (silent when the ringer is off). Needs "Always" location. iOS monitors at most 20 regions per app.
+- **Foreground:** `components/AlarmMonitor.tsx` runs a precise GPS watcher (`watchPositionAsync`, haversine). When the app is active, `handleArrival` plays the in-app looping sound and shows an `Alert` instead of using AlarmKit.
+- `AlarmMonitor` also requests permissions (location → Always → AlarmKit → notifications) and keeps the geofences in sync with the active destinations.
+- Background sounds are in `assets/alarmsounds-ios/*.caf` (≤30s, bundled by the expo-notifications plugin). `iosSoundFile(key)` maps a sound key to its file. If you add a sound, add both the mp3 and the caf.
+- `modules/loclock-alarm` is a local Expo module, so it needs a dev or EAS build. In Expo Go, only the foreground path works.
 
 ## Screens
 
@@ -171,7 +169,6 @@ Material Design 3 tokens. Two palettes: `darkColors` (ocean blue primary `#87d0f
 
 - Only install packages via `npx expo install` (managed workflow — no bare RN)
 - Geocoding uses `expo-location`'s built-in geocoder — no paid API keys
-- No background location or push notifications yet — requires paid Apple Developer account
 - No `.env` file — no secrets anywhere in this project
 - Colors always come from `useTheme().colors` — never hardcode hex
 - Fonts always from the `fonts` object exported from `ThemeContext` — never hardcode font family strings
@@ -198,14 +195,14 @@ eas submit --platform ios   # after build completes
 
 **Requires paid Apple Developer Account ($99/yr) first:**
 - [ ] EAS Build — needed to produce the .ipa for App Store submission
-- [ ] Background location monitoring — alarms only work with app open right now
-- [ ] Push notifications — replace `Alert.alert()` with proper iOS notifications
+- [x] Background location monitoring (geofences)
+- [x] Locked-phone alarm (AlarmKit, notification fallback)
 
 **App Store requirements:**
 - [ ] Privacy policy hosted at a public URL (`PRIVACY_POLICY.md` exists but needs hosting)
 - [ ] App Store listing — screenshots, description, keywords, category
 - [ ] App icons meeting Apple's exact size specs
-- [ ] `NSLocationWhenInUseUsageDescription` + `NSLocationAlwaysUsageDescription` in infoPlist
+- [x] Location + AlarmKit usage strings (via plugins / infoPlist in app.json)
 
 **Nice-to-haves before release:**
 - Onboarding flow on first launch
@@ -215,7 +212,4 @@ eas submit --platform ios   # after build completes
 
 ## Deferred features (post-MVP)
 
-- Background proximity alarm — needs Apple Developer account + EAS Build
-- Push notifications — same requirement
 - User accounts + cloud sync (Convex + auth)
-- Update FAQ "background not supported" answer once background location ships

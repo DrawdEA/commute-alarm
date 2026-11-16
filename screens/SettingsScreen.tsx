@@ -345,7 +345,7 @@ export default function SettingsScreen() {
                   Does it work in the background?
                 </Text>
                 <Text style={[styles.faqAnswer, { color: colors.textMuted, fontFamily: fonts.body }]}>
-                  Currently, alarms only work while the app is open and in the foreground. Background location monitoring is a planned feature for a future update.
+                  Yes, as long as Location is set to "Always". iOS wakes LoClock when you enter an alarm's radius, even with your phone locked. On iOS 26 it rings like a real alarm; on older versions you get a notification. Background alerts can arrive a little late, so a radius of 500m or more works best.
                 </Text>
               </View>
 
@@ -372,7 +372,7 @@ export default function SettingsScreen() {
                   Why isn't my alarm going off?
                 </Text>
                 <Text style={[styles.faqAnswer, { color: colors.textMuted, fontFamily: fonts.body }]}>
-                  Make sure the alarm is toggled on (switch is active), your location permission is granted, and the app is open. Also check that your alarm volume isn't set to 0% in the sound settings.
+                  Make sure the alarm is toggled on, Location is set to "Always", and Alarms (or Notifications on older iOS) are allowed for LoClock in Settings. If you're on a version older than iOS 26, keep your ringer on, since notifications are silent in silent mode.
                 </Text>
               </View>
 
@@ -447,7 +447,7 @@ export default function SettingsScreen() {
                   </Text>
                 </View>
                 <Text style={[styles.privacyText, { color: colors.textMuted, fontFamily: fonts.body }]}>
-                  The only permission LoClock requires is foreground location access, used solely to monitor your proximity to saved destinations. You can revoke this at any time in your device settings.
+                  LoClock uses your location ("Always") only to detect when you reach a saved destination, including while your phone is locked. It also asks to ring alarms or send notifications when you arrive. Your location never leaves your device. You can change these at any time in your device settings.
                 </Text>
                 <Pressable
                   style={[styles.permissionButton, { backgroundColor: colors.surfaceHighest }]}

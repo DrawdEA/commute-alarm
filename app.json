@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "commute-alarm",
+    "name": "LoClock",
     "slug": "commute-alarm",
-    "scheme": "commute-alarm",
+    "scheme": "loclock",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,10 +13,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.loclock.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAlarmKitUsageDescription": "LoClock rings an alarm when you're about to reach your stop, even if your phone is locked or on silent."
+      },
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
       }
     },
     "android": {
@@ -30,7 +34,8 @@
       },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
       ]
     },
     "web": {
@@ -41,7 +46,29 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow Commute Alarm to use your location."
+          "locationWhenInUsePermission": "LoClock uses your location to alert you when you're near your saved stop.",
+          "locationAlwaysAndWhenInUsePermission": "Allow \"Always\" so LoClock can wake you up when you're near your stop, even with your phone locked. Your location never leaves your device.",
+          "locationAlwaysPermission": "Allow \"Always\" so LoClock can wake you up when you're near your stop, even with your phone locked. Your location never leaves your device.",
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/alarmsounds-ios/alarm_chiptune.caf",
+            "./assets/alarmsounds-ios/alarm_default.caf",
+            "./assets/alarmsounds-ios/alarm_dreamscape.caf",
+            "./assets/alarmsounds-ios/alarm_fever_dream.caf",
+            "./assets/alarmsounds-ios/alarm_lo_fi.caf",
+            "./assets/alarmsounds-ios/alarm_morning_joy.caf",
+            "./assets/alarmsounds-ios/alarm_physical.caf",
+            "./assets/alarmsounds-ios/alarm_robotic.caf",
+            "./assets/alarmsounds-ios/alarm_rush.caf",
+            "./assets/alarmsounds-ios/alarm_softplucks.caf",
+            "./assets/alarmsounds-ios/alarm_stardust.caf",
+            "./assets/alarmsounds-ios/alarm_synapse.caf"
+          ]
         }
       ],
       "expo-font"

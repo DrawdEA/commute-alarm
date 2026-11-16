@@ -1,6 +1,6 @@
 # Privacy Policy for LoClock
 
-**Last updated: March 19, 2026**
+**Last updated: November 16, 2026**
 
 ## Overview
 
@@ -9,8 +9,8 @@ LoClock ("the App") is a location-based alarm app. Your privacy is important to 
 ## Data We Collect
 
 ### Location Data
-- The App accesses your device's GPS location **only while the app is open and an alarm is active**.
-- Your location is used solely to calculate your distance to your chosen destination.
+- The App accesses your device's location **only while at least one alarm is active**. With "Always" permission, this includes while the App is closed or your phone is locked, so it can alert you when you reach your destination.
+- In the background, the App uses iOS region monitoring (geofencing), which tells the App only when you enter the area around a saved destination. Your location is used solely to decide when to ring your alarm.
 - Location data is processed entirely on your device and is **never sent to any server**.
 
 ### Saved Destinations
@@ -18,7 +18,10 @@ LoClock ("the App") is a location-based alarm app. Your privacy is important to 
 - This data is **never uploaded, synced, or shared** with any third party.
 
 ### Alarm Settings
-- Your alert radius preference is stored locally on your device.
+- Your alert radius, sound, volume, and theme preferences are stored locally on your device.
+
+### Alarms and Notifications
+- When you arrive, the App rings a system alarm (iOS 26 and later) or shows a local notification. These are created on your device; no push notification server is involved.
 
 ## Data We Do NOT Collect
 
@@ -31,7 +34,7 @@ LoClock ("the App") is a location-based alarm app. Your privacy is important to 
 
 ## Third-Party Services
 
-The App uses Google Maps (via React Native Maps) to display the map. Google may collect usage data according to their own [Privacy Policy](https://policies.google.com/privacy). The App itself does not send any data to Google beyond what the Maps SDK requires to render the map.
+On iOS, the App uses Apple Maps (via React Native Maps) to display the map, subject to [Apple's Privacy Policy](https://www.apple.com/legal/privacy/). On Android, it uses Google Maps, subject to [Google's Privacy Policy](https://policies.google.com/privacy). The App itself sends no data to either beyond what the map requires to render.
 
 Geocoding (address search) is handled by your device's built-in location services.
 

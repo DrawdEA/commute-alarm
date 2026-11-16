@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { DEFAULT_SOUND_KEY } from '../constants/sounds';
+import { onDestinationDeactivated } from '../lib/arrival';
 
 export type Destination = {
   id: string;
@@ -59,6 +60,15 @@ export function AlarmProvider({ children }: { children: React.ReactNode }) {
       if (raw) setDefaultRadiusState(parseInt(raw, 10));
     });
   }, []);
+
+  // Alarms that fire (foreground or background) switch themselves off in storage.
+  useEffect(
+    () =>
+      onDestinationDeactivated(id =>
+        setDestinations(prev => prev.map(d => (d.id === id ? { ...d, active: false } : d))),
+      ),
+    [],
+  );
 
   function persist(updated: Destination[]) {
     AsyncStorage.setItem('destinations', JSON.stringify(updated));
